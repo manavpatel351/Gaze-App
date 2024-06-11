@@ -1,4 +1,5 @@
 Flask
+cmake
 opencv-python
 dlib
 numpy
