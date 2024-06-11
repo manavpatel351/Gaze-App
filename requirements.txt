@@ -1,5 +1,6 @@
-Flask
-cmake
-opencv-python
+Flask   
 dlib
+gunicorn
 numpy
+opencv-python
+Pillow
