@@ -1,12 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaze Detection</title>
+    <title>Video Feed</title>
 </head>
 <body>
-    <h1>Gaze Detection using OpenCV and Dlib</h1>
-    <img src="{{ url_for('video_feed') }}" width="100%">
+    <h1>Processed Video Feed</h1>
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+    <img id="processed-video" width="640" height="480" />
+    <script>
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const processedVideo = document.getElementById('processed-video');
+
+        // Access the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                // Send frames to the server
+                video.addEventListener('play', () => {
+                    function sendFrame() {
+                        if (video.paused || video.ended) {
+                            return;
+                        }
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const dataURL = canvas.toDataURL('image/jpeg');
+                        fetch('/process_frame', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ image: dataURL })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            processedVideo.src = 'data:image/jpeg;base64,' + data.image;
+                        })
+                        .catch(err => {
+                            console.error('Error sending frame:', err);
+                        });
+
+                        setTimeout(sendFrame, 10); // Send a frame every 500ms
+                    }
+                    sendFrame();
+                });
+            })
+            .catch(err => {
+                console.error("Error accessing webcam:", err);
+            });
+    </script>
 </body>
 </html>
