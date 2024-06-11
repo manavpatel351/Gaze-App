@@ -1,5 +1,5 @@
-Flask
+Flask==3.0.2
+numpy
 cmake
 opencv-python
-dlib==19.24.1
-numpy
+dlib
